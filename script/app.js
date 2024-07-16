@@ -3,7 +3,7 @@ const $input = $form.querySelector("input");
 const $roomSelect = $form.querySelector("#roomSelect");
 const $result = document.querySelector("#result");
 
-let ITEMS = JSON.parse(localStorage.getItem("guests")) || [];
+let CLIENTS = JSON.parse(localStorage.getItem("guests")) || [];
 const totalRooms = 15;
 
 const createRoomOptions = () => {
@@ -19,52 +19,52 @@ const updateRoomOptions = (excludeRoom = null) => {
     $roomSelect.querySelectorAll('option').forEach(option => {
         if (option.value) {
             const roomNumber = parseInt(option.value);
-            option.disabled = ITEMS.some(item => item.room === roomNumber) && roomNumber !== excludeRoom;
+            option.disabled = CLIENTS.some(client => client.room === roomNumber) && roomNumber !== excludeRoom;
         }
     });
 }
 
-const createNewItem = (e) => {
+const createNewClient = (e) => {
     e.preventDefault();
     const guestName = $input.value.trim();
     const roomNumber = parseInt($roomSelect.value);
 
     if (guestName && roomNumber) {
-        ITEMS.push({ name: guestName, room: roomNumber });
-        renderItem(ITEMS);
-        localStorage.setItem("guests", JSON.stringify(ITEMS));
+        CLIENTS.push({ name: guestName, room: roomNumber });
+        renderClients(CLIENTS);
+        localStorage.setItem("guests", JSON.stringify(CLIENTS));
         $input.value = "";
         $roomSelect.value = "";
         updateRoomOptions();
     }
 }
 
-const renderItem = (items) => {
+const renderClients = (clients) => {
     while ($result.firstChild) {
         $result.removeChild($result.firstChild);
     }
 
-    items.forEach((item, index) => {
+    clients.forEach((client, index) => {
         const p = document.createElement("p");
         p.innerHTML = `
-            <span>${item.name} (Room ${item.room})</span>
+            <span>${client.name} (Room ${client.room})</span>
             <div>
-                <button data-item-id="${index}" class="delete">Delete</button>
-                <button data-item-id="${index}" class="edit">Edit</button>
+                <button data-client-id="${index}" class="delete">Delete</button>
+                <button data-client-id="${index}" class="edit">Edit</button>
             </div>
         `;
         $result.appendChild(p);
     });
 }
 
-const handleItemAction = (e) => {
-    const id = +e.target.getAttribute("data-item-id");
+const handleClientAction = (e) => {
+    const id = +e.target.getAttribute("data-client-id");
 
     if (e.target.classList.contains("delete")) {
-        ITEMS = ITEMS.filter((item, index) => index !== id);
-        localStorage.setItem("guests", JSON.stringify(ITEMS));
+        CLIENTS = CLIENTS.filter((client, index) => index !== id);
+        localStorage.setItem("guests", JSON.stringify(CLIENTS));
     } else if (e.target.classList.contains("edit")) {
-        const currentGuest = ITEMS[id];
+        const currentGuest = CLIENTS[id];
         const newName = prompt("Enter a new name:", currentGuest.name);
 
         if (newName) {
@@ -72,20 +72,20 @@ const handleItemAction = (e) => {
             const newRoomNumber = parseInt(newRoom);
 
             if (newRoomNumber && (newRoomNumber === currentGuest.room || !isRoomBooked(newRoomNumber))) {
-                ITEMS[id] = { name: newName, room: newRoomNumber };
-                localStorage.setItem("guests", JSON.stringify(ITEMS));
+                CLIENTS[id] = { name: newName, room: newRoomNumber };
+                localStorage.setItem("guests", JSON.stringify(CLIENTS));
             } else {
                 alert("The selected room is not available.");
             }
         }
     }
 
-    renderItem(ITEMS);
+    renderClients(CLIENTS);
     updateRoomOptions();
 }
 
 const isRoomBooked = (room) => {
-    return ITEMS.some(item => item.room === room);
+    return CLIENTS.some(client => client.room === room);
 }
 
 const getAvailableRooms = (excludeRoom) => {
@@ -100,10 +100,7 @@ const getAvailableRooms = (excludeRoom) => {
 
 createRoomOptions();
 updateRoomOptions();
-renderItem(ITEMS);
+renderClients(CLIENTS);
 
-
-$form.addEventListener("submit", createNewItem);
-$result.addEventListener("click", handleItemAction);
-
-
+$form.addEventListener("submit", createNewClient);
+$result.addEventListener("click", handleClientAction);
